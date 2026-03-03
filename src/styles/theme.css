@@ -1,0 +1,157 @@
+/**
+ * 主题扩展样式
+ * 包含额外的主题变量和工具类
+ */
+
+/* 颜色变量 - 用于CSS-in-JS或直接CSS引用 */
+:root {
+  /* 科技蓝系列 */
+  --color-tech-50: #f0f9ff;
+  --color-tech-100: #e0f2fe;
+  --color-tech-200: #bae6fd;
+  --color-tech-300: #7dd3fc;
+  --color-tech-400: #38bdf8;
+  --color-tech-500: #0ea5e9;
+  --color-tech-600: #0284c7;
+  --color-tech-700: #0369a1;
+  --color-tech-800: #075985;
+  --color-tech-900: #0c4a6e;
+
+  /* 状态颜色 */
+  --color-status-online: #10b981;
+  --color-status-offline: #6b7280;
+  --color-status-warning: #f59e0b;
+  --color-status-danger: #ef4444;
+  --color-status-maintenance: #3b82f6;
+
+  /* 渐变定义 */
+  --gradient-tech: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.dark {
+  /* 深色模式下的颜色调整 */
+  --color-tech-50: #0c4a6e;
+  --color-tech-100: #075985;
+  --color-tech-200: #0369a1;
+  --color-tech-300: #0284c7;
+  --color-tech-400: #0ea5e9;
+  --color-tech-500: #38bdf8;
+  --color-tech-600: #7dd3fc;
+  --color-tech-700: #bae6fd;
+  --color-tech-800: #e0f2fe;
+  --color-tech-900: #f0f9ff;
+}
+
+/* 状态背景色工具类 */
+.bg-status-online {
+  background-color: var(--color-status-online);
+}
+
+.bg-status-offline {
+  background-color: var(--color-status-offline);
+}
+
+.bg-status-warning {
+  background-color: var(--color-status-warning);
+}
+
+.bg-status-danger {
+  background-color: var(--color-status-danger);
+}
+
+.bg-status-maintenance {
+  background-color: var(--color-status-maintenance);
+}
+
+/* 状态文字色工具类 */
+.text-status-online {
+  color: var(--color-status-online);
+}
+
+.text-status-offline {
+  color: var(--color-status-offline);
+}
+
+.text-status-warning {
+  color: var(--color-status-warning);
+}
+
+.text-status-danger {
+  color: var(--color-status-danger);
+}
+
+.text-status-maintenance {
+  color: var(--color-status-maintenance);
+}
+
+/* 状态边框色工具类 */
+.border-status-online {
+  border-color: var(--color-status-online);
+}
+
+.border-status-offline {
+  border-color: var(--color-status-offline);
+}
+
+.border-status-warning {
+  border-color: var(--color-status-warning);
+}
+
+.border-status-danger {
+  border-color: var(--color-status-danger);
+}
+
+.border-status-maintenance {
+  border-color: var(--color-status-maintenance);
+}
+
+/* 渐变文字效果 */
+.text-gradient-tech {
+  background: var(--gradient-tech);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 卡片阴影层级 */
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.dark .shadow-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+}
+
+.dark .shadow-card-hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+
+/* 侧边栏过渡 */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 内容区域过渡 */
+.content-transition {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 折叠状态下的文字隐藏 */
+.sidebar-collapsed .sidebar-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+/* 悬浮提示样式 */
+.tooltip-content {
+  @apply px-2 py-1 text-xs rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900;
+}
