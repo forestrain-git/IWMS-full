@@ -1,189 +1,49 @@
-/**
- * @file app/stations/page.tsx
- * @description 站点管理主页面（全屏地图版）
- * @module 模块2:站点管理
- */
-
 "use client";
 
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
-import { useGlobalStore } from "@/store";
-import { debounce } from "@/lib/utils";
-import { COLORS, SPACING, BORDER_RADIUS, SHADOWS, ANIMATION, TYPOGRAPHY } from "@/lib/design-tokens";
-import { DiscoveryBar } from "./components/DiscoveryBar";
-import { GISMapView } from "./components/GISMapView";
-import { StationListView } from "./components/StationListView";
-import StationDetailDrawer from "./components/StationDetailDrawer";
-import { QuickActionBar } from "./components/QuickActionBar";
-import { useStationData } from "./hooks/useStationData";
-import type { Station } from "./types/station";
+import PageHeader from "@/components/business/PageHeader";
+import { Card, CardContent } from "@/components/ui/card";
+import { useMockDataStore } from "@/store";
 
-type ViewMode = "map" | "list";
-type CardMode = "compact" | "detailed";
-
-function StationsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  // 全局状态
-  const { selectedStationId, setSelectedStationId, setCurrentPageTitle } = useGlobalStore();
-
-  // 本地状态
-  const [viewMode, setViewMode] = useState<ViewMode>("map");
-  const [cardMode, setCardMode] = useState<CardMode>("compact");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-
-  // 设置页面标题
-  useEffect(() => {
-    setCurrentPageTitle("站点管理");
-  }, [setCurrentPageTitle]);
-
-  // 站点数据与选择逻辑
-  const { stations: filteredStations, selectedStation } = useStationData(
-    searchQuery,
-    selectedStatuses
-  );
-
-  // 从URL参数同步（模块1跳转过来）
-  useEffect(() => {
-    const idFromUrl = searchParams.get("id");
-    if (idFromUrl && idFromUrl !== selectedStationId) {
-      setSelectedStationId(idFromUrl);
-    }
-  }, [searchParams, selectedStationId, setSelectedStationId]);
-
-  // 监听selectedStationId变化，打开/关闭抽屉
-  useEffect(() => {
-    if (selectedStationId) {
-      router.replace(`/stations?id=${selectedStationId}`, { scroll: false });
-    } else {
-      router.replace("/stations", { scroll: false });
-    }
-  }, [selectedStationId, router]);
-
-  // 选择站点
-  const handleStationSelect = useCallback((station: Station | null) => {
-    if (station) {
-      setSelectedStationId(station.id);
-    } else {
-      setSelectedStationId(null);
-    }
-  }, [setSelectedStationId]);
-
-  // 关闭抽屉
-  const handleDrawerClose = useCallback(() => {
-    setSelectedStationId(null);
-  }, [setSelectedStationId]);
-
-  // 搜索（防抖）
-  const handleSearchChange = useMemo(
-    () => debounce(((query: string) => {
-      setSearchQuery(query);
-    }) as any, 300),
-    []
-  );
-
-  // 状态筛选
-  const handleStatusFilterChange = useCallback((statuses: string[]) => {
-    setSelectedStatuses(statuses);
-  }, []);
-
-  // 样式配置
-  const mapContainerStyles = useMemo(() => ({
-    position: 'fixed' as const,
-    inset: '64px 0 0 64px',
-  }), []);
-
-  const floatingNavStyles = useMemo(() => ({
-    position: 'absolute' as const,
-    top: SPACING.md,
-    left: SPACING.md,
-    right: SPACING.md,
-    zIndex: 20,
-  }), []);
-
-  const contentContainerStyles = useMemo(() => ({
-    width: '100%',
-    height: '100%',
-  }), []);
-
-  const listContainerStyles = useMemo(() => ({
-    height: '100%',
-    padding: SPACING.md,
-    paddingTop: '96px',
-    overflow: 'auto',
-  }), []);
+export default function StationsPage() {
+  const stations = useMockDataStore((state) => state.stations);
 
   return (
     <MainLayout>
-      {/* 全屏地图容器 */}
-      <div style={mapContainerStyles}>
-        {/* 悬浮导航栏 */}
-        <div style={floatingNavStyles}>
-          <DiscoveryBar
-            viewMode={viewMode}
-            cardMode={cardMode}
-            onViewModeChange={setViewMode}
-            onCardModeChange={setCardMode}
-            onSearchChange={handleSearchChange}
-            onStatusFilterChange={handleStatusFilterChange}
-            selectedStatuses={selectedStatuses}
-            totalCount={filteredStations.length}
-          />
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          title="站点管理"
+          description="垃圾站点的监控与管理"
+        />
 
-        {/* 地图/列表内容 */}
-        <div style={contentContainerStyles}>
-          {viewMode === "map" ? (
-            <GISMapView 
-              stations={filteredStations} 
-              onStationSelect={handleStationSelect}
-            />
-          ) : (
-            <div style={listContainerStyles}>
-              <StationListView 
-                stations={filteredStations} 
-                onStationSelect={handleStationSelect}
-                cardMode={cardMode}
-              />
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-lg font-semibold mb-4">站点列表 ({stations.length})</h2>
+            <div className="space-y-2">
+              {stations.slice(0, 10).map((station) => (
+                <div
+                  key={station.id}
+                  className="flex items-center justify-between p-3 border rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{station.name}</span>
+                    <span className="text-muted-foreground text-sm">{station.address}</span>
+                  </div>
+                  <span className={`text-sm px-2 py-1 rounded ${
+                    station.status === 'online'
+                      ? 'bg-green-100 text-green-700'
+                      : station.status === 'offline'
+                      ? 'bg-gray-100 text-gray-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {station.status === 'online' ? '在线' : station.status === 'offline' ? '离线' : '告警'}
+                  </span>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* 详情抽屉 */}
-      <StationDetailDrawer
-        station={selectedStation}
-        isOpen={!!selectedStationId}
-        onClose={handleDrawerClose}
-      />
-      <QuickActionBar stationId={selectedStation?.id} />
     </MainLayout>
   );
 }
-
-// 包装组件以处理Suspense
-function StationsPageWithSuspense() {
-  const loadingStyles = useMemo(() => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    fontSize: TYPOGRAPHY.fontSize.lg,
-    color: COLORS.neutral[500],
-    backgroundColor: COLORS.neutral[100],
-  }), []);
-
-  return (
-    <Suspense fallback={<div style={loadingStyles}>Loading...</div>}>
-      <StationsPage />
-    </Suspense>
-  );
-}
-
-export default StationsPageWithSuspense;

@@ -41,6 +41,19 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: THEME_CONFIG.storageKey,
+      storage: typeof window !== "undefined" ? {
+        getItem: (name) => {
+          const value = localStorage.getItem(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name);
+        },
+      } : undefined,
+      skipHydration: true,
     }
   )
 );
@@ -305,6 +318,9 @@ export function initializeMockData() {
   const { refreshData } = useMockDataStore.getState();
   refreshData();
 
+  // 注释掉可能导致无限循环的定时器
+  // TODO: 改为可控制的更新机制
+  /*
   // 模拟实时数据更新
   setInterval(() => {
     const { refreshKPIData } = useMockDataStore.getState();
@@ -320,4 +336,5 @@ export function initializeMockData() {
       updateUnreadCount(alerts.filter((a) => a.status === "pending").length);
     }
   }, 60000); // 每分钟检查一次新告警
+  */
 }

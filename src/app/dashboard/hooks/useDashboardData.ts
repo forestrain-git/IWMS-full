@@ -85,11 +85,13 @@ export function useDashboardData(): DashboardData & { refresh: () => void } {
 
   // KPI每30秒自动刷新
   useEffect(() => {
-    const interval = setInterval(() => {
-      setKpi(generateKPIData());
-      setLastUpdated(new Date());
-    }, 30000);
-    return () => clearInterval(interval);
+    // 暂时注释掉定时器，避免热更新死循环
+    // const interval = setInterval(() => {
+    //   setKpi(generateKPIData());
+    //   setLastUpdated(new Date());
+    // }, 30000);
+    
+    // return () => clearInterval(interval);
   }, []);
 
   // 使用全局站点或生成Mock站点

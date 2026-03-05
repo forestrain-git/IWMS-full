@@ -503,7 +503,7 @@ function generateAIRecognition(stations: Station[]): AIRecognition {
     stationName: station.name,
     type,
     confidence,
-    imageUrl: `/api/mock/ai-image/${generateId("img")}`,
+    imageUrl: "", // 暂时移除API路径，避免404错误
     description: randomElement(descriptions[type]),
     isAlert,
   };

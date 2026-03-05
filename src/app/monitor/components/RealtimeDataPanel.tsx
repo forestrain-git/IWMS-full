@@ -60,9 +60,12 @@ function EquipmentDataCard({ equipment }: { equipment: EquipmentInfo }) {
     };
 
     generateTrendData();
-    const interval = setInterval(generateTrendData, 5000); // 每5秒更新
+    // 暂时注释掉定时器，避免热更新死循环
+    // const interval = setInterval(generateTrendData, 5000); // 每5秒更新
     
-    return () => clearInterval(interval);
+    return () => {
+      // clearInterval(interval);
+    };
   }, [equipment.realtimeData.pressure]);
 
   const dataItems = [

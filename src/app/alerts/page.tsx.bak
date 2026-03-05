@@ -1,0 +1,217 @@
+/**
+ * 告警中心页面（演示版）
+ * 视觉冲击力增强，适合客户展示
+ */
+
+"use client";
+
+import * as React from "react";
+import { motion } from "framer-motion";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/business/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useMockDataStore } from "@/store";
+import {
+  COLORS,
+  SPACING,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+  TYPOGRAPHY
+} from "@/lib/design-tokens";
+import { cn, formatDateTime } from "@/lib/utils";
+import type { Alert, AlertStatus } from "@/types";
+import { ALERT_LEVEL_CONFIG, ALERT_STATUS_CONFIG } from "@/lib/constants";
+import { useMockDataStore } from "@/store";
+
+import { AlertStatCards } from "./demo/AlertStatCards";
+import { SmartAlertList } from "./demo/SmartAlertList";
+import { AlertDetailShowcase } from "./demo/AlertDetailShowcase";
+import { EnhancedAlertTicker } from "./demo/EnhancedAlertTicker";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+export default function AlertsPage() {
+  const alerts = useMockDataStore((state) => state.alerts);
+  const [selectedAlert, setSelectedAlert] = React.useState<Alert | null>(null);
+  const [statusFilter, setStatusFilter] = React.useState<AlertStatus | "all">("all");
+  const [levelFilter, setLevelFilter] = React.useState<string>("all");
+  const [showDetailSheet, setShowDetailSheet] = React.useState(false);
+
+  // 计算统计数据
+  const stats = React.useMemo(() => ({
+    total: alerts.length,
+    pending: alerts.filter(a => a.status === "pending").length,
+    processing: alerts.filter(a => a.status === "processing").length,
+    resolved: alerts.filter(a => a.status === "resolved").length,
+    critical: alerts.filter(a => a.level === "critical").length,
+  }), [alerts]);
+
+  // 过滤告警
+  const filteredAlerts = React.useMemo(() => {
+    return alerts.filter(alert => {
+      const matchesStatus = statusFilter === "all" || alert.status === statusFilter;
+      const matchesLevel = levelFilter === "all" || alert.level === levelFilter;
+      return matchesStatus && matchesLevel;
+    });
+  }, [alerts, statusFilter, levelFilter]);
+
+  // 处理告警点击
+  const handleAlertClick = (alert: Alert) => {
+    setSelectedAlert(alert);
+    setShowDetailSheet(true);
+  };
+
+  // 处理统计卡片点击
+  const handleStatCardClick = (type: AlertStatus | "total" | "critical") => {
+    if (type === "total") {
+      setStatusFilter("all");
+      setLevelFilter("all");
+    } else if (type === "critical") {
+      setLevelFilter("critical");
+      setStatusFilter("all");
+    } else {
+      setStatusFilter(type);
+      setLevelFilter("all");
+    }
+  };
+
+  return (
+    <MainLayout>
+      {/* 实时告警跑马灯 */}
+      <div className="mb-6">
+        <EnhancedAlertTicker
+          onAlertClick={handleAlertClick}
+        />
+      </div>
+
+      <motion.div
+        className="space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <PageHeader
+          title="告警中心"
+          description="智能告警管理与实时监控"
+          animated
+        />
+
+        {/* 统计卡片 */}
+        <AlertStatCards
+          stats={stats}
+          onCardClick={handleStatCardClick}
+        />
+
+        {/* 筛选器 */}
+        <motion.div variants={{
+          hidden: { opacity: 0, y: 30 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+        }}>
+          <Card className="bg-card/60 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="text-sm font-medium text-muted-foreground">筛选条件:</span>
+                <Select value={statusFilter} onValueChange={(value: string) => setStatusFilter(value as AlertStatus | "all")}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="告警状态" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部状态</SelectItem>
+                    <SelectItem value="pending">待处理</SelectItem>
+                    <SelectItem value="processing">处理中</SelectItem>
+                    <SelectItem value="resolved">已解决</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={levelFilter} onValueChange={setLevelFilter}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="告警等级" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部等级</SelectItem>
+                    <SelectItem value="critical">紧急</SelectItem>
+                    <SelectItem value="high">高</SelectItem>
+                    <SelectItem value="medium">中</SelectItem>
+                    <SelectItem value="low">低</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <span className="text-sm text-muted-foreground ml-auto">
+                  共 {filteredAlerts.length} 条记录
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* 告警列表 */}
+        <motion.div variants={{
+          hidden: { opacity: 0, y: 30 },
+          visible: { opacity: 1, y: 0, transition: { delay: 0.1 } }
+        }}>
+          <Tabs defaultValue="all" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="all">
+                全部
+              </TabsTrigger>
+              <TabsTrigger value="pending">
+                待处理
+              </TabsTrigger>
+              <TabsTrigger value="critical">
+                紧急
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="mt-0">
+              <SmartAlertList
+                alerts={filteredAlerts}
+                onAlertClick={handleAlertClick}
+              />
+            </TabsContent>
+
+            <TabsContent value="pending" className="mt-0">
+              <SmartAlertList
+                alerts={filteredAlerts.filter(a => a.status === "pending")}
+                onAlertClick={handleAlertClick}
+              />
+            </TabsContent>
+
+            <TabsContent value="critical" className="mt-0">
+              <SmartAlertList
+                alerts={filteredAlerts.filter(a => a.level === "critical")}
+                onAlertClick={handleAlertClick}
+              />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </motion.div>
+
+      {/* 告警详情秀 */}
+      <AlertDetailShowcase
+        alert={selectedAlert}
+        open={showDetailSheet}
+        onClose={() => setShowDetailSheet(false)}
+      />
+    </MainLayout>
+  );
+}

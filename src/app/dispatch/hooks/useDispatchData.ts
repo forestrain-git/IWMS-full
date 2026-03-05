@@ -357,10 +357,10 @@ export function useDispatchData(stationId?: string): UseDispatchDataReturn {
     
     initializeData();
 
-    // 设置定时更新（每5秒更新一次）
-    updateIntervalRef.current = setInterval(() => {
-      updateRealtimeData();
-    }, 5000);
+    // 暂时注释掉定时器，避免热更新死循环
+    // updateIntervalRef.current = setInterval(() => {
+    //   updateRealtimeData();
+    // }, 5000);
 
     return () => {
       if (updateIntervalRef.current) {
